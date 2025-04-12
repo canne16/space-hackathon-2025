@@ -89,6 +89,18 @@ fn gravity_law(_: f64, a: &[f64; 6]) -> [f64; 6] {
     ]
 }
 
+fn gravity_law_j2(_: f64, a: &[f64; 6]) -> [f64; 6] {
+    let r = (a[0] * a[0] + a[1] * a[1] + a[2] * a[2]).sqrt();
+    [
+        a[3],
+        a[4],
+        a[5],
+        -a[0] * 3*MU*J_2*R.powf(2.0) / (2*r.powf(5.0))*(1-5*a[2].powf(2.0)/r.powf(2.0)),
+        -a[1] * 3*MU*J_2*R.powf(2.0) / (2*r.powf(5.0))*(1-5*a[2].powf(2.0)/r.powf(2.0)),
+        -a[2] * 3*MU*J_2*R.powf(2.0) / (2*r.powf(5.0))*(3-5*a[2].powf(2.0)/r.powf(2.0)),
+    ]
+}
+
 pub struct CauchyProblem<const N: usize> {
     pub f: fn(t: f64, &[f64; N]) -> [f64; N],
     pub start: f64,
