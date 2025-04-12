@@ -109,14 +109,11 @@ where
             }
         }
 
-        // println!("AAA {:?}, {:?}", jacobian, f(&x));
         let delta_x: [f64; N] = solve_linear_system(&jacobian, &f(&x));
 
         for i in 0..N {
             x[i] += delta_x[i] * 10e-1;
         }
-
-        println!("{:?}", x);
 
         if print_progress {
             println!("x: {:?}, f(x): {:?}", x, f(&x));
