@@ -77,7 +77,7 @@ fn main() {
     let mut earth_solution: solvers::CauchySolution<6> = solvers::CauchySolution {
         t: vec![],
         x: vec![],
-        method_name: solution.method_name,
+        method_name: solution.method_name.clone(),
     };
 
     for i in 0..solution.t.len() {
@@ -94,5 +94,5 @@ fn main() {
         ]);
     }
     write_csv(&earth_solution, "../../problem_data/plot_data/static_earth_orbit".to_string());
-    write_csv(&earth_solution, "../../problem_data/plot_data/static_space_orbit".to_string());
+    write_csv(&solution, "../../problem_data/plot_data/static_space_orbit".to_string());
 }
