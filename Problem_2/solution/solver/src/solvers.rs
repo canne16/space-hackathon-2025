@@ -96,7 +96,7 @@ where
     let mut x: [f64; N] = x.clone();
     let mut iterations: u32 = 0u32;
 
-    while !close_enough_arr(&f(&x), &[0f64; N], 1e-6) {
+    while !close_enough_arr(&f(&x), &[0f64; N], 1e3) {
         if iterations == max_iterations {
             return Err("Cannot solve system, too many iterations");
         }
@@ -105,15 +105,18 @@ where
 
         for i in 0..N {
             for j in 0..N {
-                jacobian[i][j] = -partial_derivative(&f, &x, i, j, 1e-5);
+                jacobian[i][j] = -partial_derivative(&f, &x, i, j, x[j] * 1e-3);
             }
         }
 
+        // println!("AAA {:?}, {:?}", jacobian, f(&x));
         let delta_x: [f64; N] = solve_linear_system(&jacobian, &f(&x));
 
         for i in 0..N {
-            x[i] += delta_x[i];
+            x[i] += delta_x[i] * 10e-1;
         }
+
+        println!("{:?}", x);
 
         if print_progress {
             println!("x: {:?}, f(x): {:?}", x, f(&x));
