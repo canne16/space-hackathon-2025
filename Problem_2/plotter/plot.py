@@ -1,7 +1,8 @@
 import pandas as pd
 import plotly.graph_objects as go
+import numpy as np
 
-df = pd.read_csv("../problem_data/plot_data/static_earth_orbit.csv")
+df = pd.read_csv("../problem_data/plot_data/earth_output.csv")
 df.columns = [col.strip() for col in df.columns]
 
 # Main trajectory line
@@ -32,8 +33,26 @@ end_marker = go.Scatter3d(
     name='End'
 )
 
+# Create Earth sphere
+r = 6700e3  # Radius in km
+theta = np.linspace(0, np.pi, 50)
+phi = np.linspace(0, 2 * np.pi, 50)
+theta, phi = np.meshgrid(theta, phi)
+
+x = r * np.sin(theta) * np.cos(phi)
+y = r * np.sin(theta) * np.sin(phi)
+z = r * np.cos(theta)
+
+earth = go.Surface(
+    x=x, y=y, z=z,
+    colorscale=[[0, '#f0dda9'], [1, '#f0dda9']],
+    opacity=1,
+    showscale=False,
+    name='Earth'
+)
+
 # Combine all traces
-fig = go.Figure(data=[trajectory, start_marker, end_marker])
+fig = go.Figure(data=[earth, trajectory, start_marker, end_marker])
 
 # Layout
 fig.update_layout(
