@@ -47,12 +47,19 @@ pub struct CauchyProblem<const N: usize> {
 }
 
 fn main() {
+    let angle: f64 = 98.0 * std::f64::consts::PI / 180.0;
+    let velocity: f64 = 28234.7460233;
+
     let problem: solvers::CauchyProblem<6> = solvers::CauchyProblem {
         f: gravity_law,
         start: 0.0,
-        // stop: 100.0 * 60.0 * 60.0,
-        stop: 60.0 * 60.0 * 24.0,
-        x_0: [42164000.0, 0.0, 0.0, 0.0, 3070.0, 0.0],
+
+        // Geostatic
+        // stop: 60.0 * 60.0 * 24.0,
+        // x_0: [42164000.0, 0.0, 0.0, 0.0, 3070.0, 0.0],
+
+        stop: 100.0 * 60.0 * 60.0,
+        x_0: [500000.0, 0.0, 0.0, 0.0, velocity * angle.cos(), velocity * angle.sin()],
     };
 
     let mut solver: solvers::RungeKuttaMethod<6, 3, 18> = solvers::RungeKuttaMethod::new(
