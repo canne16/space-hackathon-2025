@@ -82,10 +82,11 @@ pub fn solve_linear_system<const N: usize>(a: &[[f64; N]; N], b: &[f64; N]) -> [
     x
 }
 
-fn solve_newton<F, const N: usize>(
+pub fn solve_newton<F, const N: usize>(
     f: F,
     x: &[f64; N],
     max_iterations: Option<u32>,
+    print_progress: bool,
 ) -> Result<[f64; N], &'static str>
 where
     F: Fn(&[f64; N]) -> [f64; N],
@@ -112,6 +113,10 @@ where
 
         for i in 0..N {
             x[i] += delta_x[i];
+        }
+
+        if print_progress {
+            println!("x: {:?}, f(x): {:?}", x, f(&x));
         }
 
         iterations += 1;
@@ -255,7 +260,7 @@ impl<const N: usize, const M: usize, const NM: usize> RungeKuttaMethod<N, M, NM>
             k_i
         };
 
-        let k = match solve_newton(equation, &[0f64; NM], None) {
+        let k = match solve_newton(equation, &[0f64; NM], None, false) {
             Ok(x) => unflatten::<N, M>(&x),
             Err(err) => {
                 println!("Failed to solve, {}", err);
@@ -326,7 +331,7 @@ impl<const N: usize, const M: usize, const NM: usize> DifferentialEquationNumeri
                         solution.t.push(t);
                         solution.x.push(x);
                         if print_progress {
-                            print!("t: {:>20.10}, iterations: {}\r", t, iterations)
+                            print!("\rt: {:>20.10}, iterations: {}", t, iterations)
                         }
                     }
                 }
@@ -336,6 +341,10 @@ impl<const N: usize, const M: usize, const NM: usize> DifferentialEquationNumeri
                 }
             };
             iterations += 1;
+        }
+
+        if print_progress {
+            println!("");
         }
 
         (solution, Ok(()))
@@ -453,7 +462,7 @@ impl<const N: usize> AdamsMethod<N> {
                         x_i
                     };
 
-                    match solve_newton(equation, &[0.0; N], None) {
+                    match solve_newton(equation, &[0.0; N], None, false) {
                         Ok(x) => Ok((t[n] + tau, x)),
                         Err(err) => {
                             println!("Failed to solve, {}", err);
@@ -477,7 +486,7 @@ impl<const N: usize> AdamsMethod<N> {
                         x_i
                     };
 
-                    match solve_newton(equation, &x[n - 1], None) {
+                    match solve_newton(equation, &x[n - 1], None, false) {
                         Ok(x) => Ok((t[n] + tau, x)),
                         Err(err) => {
                             println!("Failed to solve, {}", err);
@@ -502,7 +511,7 @@ impl<const N: usize> AdamsMethod<N> {
                         x_i
                     };
 
-                    match solve_newton(equation, &x[n - 1], None) {
+                    match solve_newton(equation, &x[n - 1], None, false) {
                         Ok(x) => Ok((t[n] + tau, x)),
                         Err(err) => {
                             println!("Failed to solve, {}", err);
@@ -528,7 +537,7 @@ impl<const N: usize> AdamsMethod<N> {
                         x_i
                     };
 
-                    match solve_newton(equation, &x[n - 1], None) {
+                    match solve_newton(equation, &x[n - 1], None, false) {
                         Ok(x) => Ok((t[n] + tau, x)),
                         Err(err) => {
                             println!("Failed to solve, {}", err);
@@ -586,7 +595,7 @@ impl<const N: usize> DifferentialEquationNumericMethod<N> for AdamsMethod<N> {
                         solution.t.push(t);
                         solution.x.push(x);
                         if print_progress {
-                            print!("t: {:>20.10}, iterations: {}\r", t, iterations)
+                            print!("\rt: {:>20.10}, iterations: {}", t, iterations)
                         }
                     }
                 }
@@ -596,6 +605,10 @@ impl<const N: usize> DifferentialEquationNumericMethod<N> for AdamsMethod<N> {
                 }
             };
             iterations += 1;
+        }
+
+        if print_progress {
+            println!("");
         }
 
         (solution, Ok(()))
@@ -701,7 +714,7 @@ impl<const N: usize> BackwardDifferentiationMethod<N> {
                         x_i
                     };
 
-                    match solve_newton(equation, &[0.0; N], None) {
+                    match solve_newton(equation, &[0.0; N], None, false) {
                         Ok(x) => Ok((t[n] + tau, x)),
                         Err(err) => {
                             println!("Failed to solve, {}", err);
@@ -724,7 +737,7 @@ impl<const N: usize> BackwardDifferentiationMethod<N> {
                         x_i
                     };
 
-                    match solve_newton(equation, &x[n - 1], None) {
+                    match solve_newton(equation, &x[n - 1], None, false) {
                         Ok(x) => Ok((t[n] + tau, x)),
                         Err(err) => {
                             println!("Failed to solve, {}", err);
@@ -748,7 +761,7 @@ impl<const N: usize> BackwardDifferentiationMethod<N> {
                         x_i
                     };
 
-                    match solve_newton(equation, &x[n - 1], None) {
+                    match solve_newton(equation, &x[n - 1], None, false) {
                         Ok(x) => Ok((t[n] + tau, x)),
                         Err(err) => {
                             println!("Failed to solve, {}", err);
@@ -773,7 +786,7 @@ impl<const N: usize> BackwardDifferentiationMethod<N> {
                         x_i
                     };
 
-                    match solve_newton(equation, &x[n - 1], None) {
+                    match solve_newton(equation, &x[n - 1], None, false) {
                         Ok(x) => Ok((t[n] + tau, x)),
                         Err(err) => {
                             println!("Failed to solve, {}", err);
@@ -831,7 +844,7 @@ impl<const N: usize> DifferentialEquationNumericMethod<N> for BackwardDifferenti
                         solution.t.push(t);
                         solution.x.push(x);
                         if print_progress {
-                            print!("t: {:>20.10}, iterations: {}\r", t, iterations)
+                            print!("\rt: {:>20.10}, iterations: {}", t, iterations)
                         }
                     }
                 }
@@ -841,6 +854,10 @@ impl<const N: usize> DifferentialEquationNumericMethod<N> for BackwardDifferenti
                 }
             };
             iterations += 1;
+        }
+
+        if print_progress {
+            println!("");
         }
 
         (solution, Ok(()))
@@ -953,7 +970,7 @@ mod tests {
             ]
         }
 
-        let solution = solve_newton(f, &[0f64, 0f64], None).unwrap();
+        let solution = solve_newton(f, &[0f64, 0f64], None, true).unwrap();
 
         assert!(close_enough_arr(&f(&solution), &[0f64, 0f64], 1e-6));
     }
