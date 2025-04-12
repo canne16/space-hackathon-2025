@@ -41,7 +41,7 @@ fn find_last_start_intersection(solution: &CauchySolution<6>) -> usize {
         if solution.x[i][2] > solution.x[i + 1][2] {
             continue;
         }
-        if (closest_longitude >= solution.x[i][1].atan2(solution.x[i][0]).abs())
+        if closest_longitude >= solution.x[i][1].atan2(solution.x[i][0]).abs()
         {
             res = i;
             closest_longitude = solution.x[i][1].atan2(solution.x[i][0]).abs();
@@ -167,8 +167,8 @@ fn main() {
         x: vec![],
         method_name: solution.method_name.clone(),
     };
-
-    for i in 0..solution.t.len() {
+    
+    for i in 0..find_last_start_intersection(&solution) {
         let t = solution.t[i];
         let angle = -t * omega_E;
         earth_solution.t.push(t);
@@ -179,9 +179,16 @@ fn main() {
             0.0,
             0.0,
             0.0,
-        ]);
-    }
+            ]);
+        }
+    
+    let last_intersection_index = find_last_start_intersection(&earth_solution) + 1;
+    
+    println!("last interection index: {}", last_intersection_index);
 
+    earth_solution.x.truncate(last_intersection_index);
+    earth_solution.t.truncate(last_intersection_index);
+        
     write_csv(
         &earth_solution,
         "../../problem_data/plot_data/static_earth_orbit".to_string(),
