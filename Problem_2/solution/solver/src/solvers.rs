@@ -310,9 +310,12 @@ impl<const N: usize, const M: usize, const NM: usize> DifferentialEquationNumeri
             method_name: self.get_name(),
         };
 
+        solution.t.push(problem.start);
+        solution.x.push(problem.x_0.clone());
         if print_progress {
-            println!("");
+            print!("t: {:>20.10}, iterations: {}", problem.start, iterations)
         }
+        iterations += 1;
 
         while t_i < problem.stop {
             match self.step(&problem, tau, t_i, x_i) {
@@ -558,9 +561,12 @@ impl<const N: usize> DifferentialEquationNumericMethod<N> for AdamsMethod<N> {
             method_name: self.get_name(),
         };
 
+        solution.t.push(problem.start);
+        solution.x.push(problem.x_0.clone());
         if print_progress {
-            println!("");
+            print!("t: {:>20.10}, iterations: {}", problem.start, iterations)
         }
+        iterations += 1;
 
         while *t_i.last().unwrap() < problem.stop {
             let res: Result<(f64, [f64; N]), &str> = match self.solver_type {
@@ -800,9 +806,12 @@ impl<const N: usize> DifferentialEquationNumericMethod<N> for BackwardDifferenti
             method_name: self.get_name(),
         };
 
+        solution.t.push(problem.start);
+        solution.x.push(problem.x_0.clone());
         if print_progress {
-            println!("");
+            print!("t: {:>20.10}, iterations: {}", problem.start, iterations)
         }
+        iterations += 1;
 
         while *t_i.last().unwrap() < problem.stop {
             let res: Result<(f64, [f64; N]), &str> = match self.solver_type {
@@ -838,7 +847,10 @@ impl<const N: usize> DifferentialEquationNumericMethod<N> for BackwardDifferenti
     }
 
     fn get_name(&self) -> String {
-        return format!("{} Backward differentiation method of order: {}", self.solver_type, self.order,);
+        return format!(
+            "{} Backward differentiation method of order: {}",
+            self.solver_type, self.order,
+        );
     }
 }
 

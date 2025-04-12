@@ -9,13 +9,13 @@ const R: f64 = 6371302.0;
 const omega_E: f64 = 729211e-5;
 const J_2: f64 = 1082.8e-6;
 
-fn write_csv<const N: usize>(
-    solution: CauchySolution<N>,
-) {
-    let mut file = std::fs::File::create(format!("{}.csv", "solution"))
-        .expect("Failed to open file");
+fn write_csv<const N: usize>(solution: CauchySolution<N>) {
+    let mut file =
+        std::fs::File::create(format!("{}.csv", "solution")).expect("Failed to open file");
+    file.write("Time, X, Y, Z, VX, VY, VZ\n".as_bytes())
+        .expect("failed to write to file");
     for i in 0..solution.t.len() {
-        file.write(format!("{:>8.6}", solution.t[i]).as_bytes())
+        file.write(format!("{:>10.3}", solution.t[i]).as_bytes())
             .expect("failed to write to file");
         for j in 0..N {
             file.write(format!(", {:>18.6}", solution.x[i][j] / 1000.0).as_bytes())
@@ -47,12 +47,19 @@ pub struct CauchyProblem<const N: usize> {
 }
 
 fn main() {
+    let angle: f64 = 98.0 * std::f64::consts::PI / 180.0;
+    let velocity: f64 = 28234.7460233;
+
     let problem: solvers::CauchyProblem<6> = solvers::CauchyProblem {
         f: gravity_law,
         start: 0.0,
-        // stop: 100.0 * 60.0 * 60.0,
-        stop: 60.0 * 60.0 * 24.0,
-        x_0: [42164000.0, 0.0, 0.0, 0.0, 3070.0, 0.0],
+
+        // Geostatic
+        // stop: 60.0 * 60.0 * 24.0,
+        // x_0: [42164000.0, 0.0, 0.0, 0.0, 3070.0, 0.0],
+
+        stop: 100.0 * 60.0 * 60.0,
+        x_0: [500000.0, 0.0, 0.0, 0.0, velocity * angle.cos(), velocity * angle.sin()],
     };
 
     let mut solver: solvers::RungeKuttaMethod<6, 3, 18> = solvers::RungeKuttaMethod::new(
