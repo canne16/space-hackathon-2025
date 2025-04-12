@@ -43,8 +43,7 @@ fn find_last_start_intersection(solution: &CauchySolution<6>) -> usize {
         if solution.x[i][2] > solution.x[i + 1][2] {
             continue;
         }
-        if closest_longitude >= solution.x[i][1].atan2(solution.x[i][0]).abs()
-        {
+        if closest_longitude >= solution.x[i][1].atan2(solution.x[i][0]).abs() {
             res = i;
             closest_longitude = solution.x[i][1].atan2(solution.x[i][0]).abs();
         }
@@ -95,9 +94,12 @@ fn gravity_law_j2(_: f64, a: &[f64; 6]) -> [f64; 6] {
         a[3],
         a[4],
         a[5],
-        -a[0] * 3*MU*J_2*R.powf(2.0) / (2*r.powf(5.0))*(1-5*a[2].powf(2.0)/r.powf(2.0)),
-        -a[1] * 3*MU*J_2*R.powf(2.0) / (2*r.powf(5.0))*(1-5*a[2].powf(2.0)/r.powf(2.0)),
-        -a[2] * 3*MU*J_2*R.powf(2.0) / (2*r.powf(5.0))*(3-5*a[2].powf(2.0)/r.powf(2.0)),
+        -a[0] * 3.0 * MU * J_2 * R.powf(2.0) / (2.0 * r.powf(5.0))
+            * (1.0 - 5.0 * a[2].powf(2.0) / r.powf(2.0)),
+        -a[1] * 3.0 * MU * J_2 * R.powf(2.0) / (2.0 * r.powf(5.0))
+            * (1.0 - 5.0 * a[2].powf(2.0) / r.powf(2.0)),
+        -a[2] * 3.0 * MU * J_2 * R.powf(2.0) / (2.0 * r.powf(5.0))
+            * (3.0 - 5.0 * a[2].powf(2.0) / r.powf(2.0)),
     ]
 }
 
@@ -147,7 +149,7 @@ fn calculate_closest_good_orbit(r_0: f64) -> (f64, f64, f64, f64, u32) {
             "Kutta's third-order method (Explicit)".to_string(),
         );
 
-        let (mut solution, res) = solver.solve(&problem, 0.1, false, Some(1));
+        let (mut solution, res) = solver.solve(&problem, 0.1, true, Some(1));
 
         for i in 0..solution.t.len() {
             let t = solution.t[i];
@@ -170,7 +172,7 @@ fn calculate_closest_good_orbit(r_0: f64) -> (f64, f64, f64, f64, u32) {
 
     // let r_0 = R + 500000.0;
 
-    let [r, v] = solvers::solve_newton(equation, &[r_0, calc_velocity(r_0)], None, false).unwrap();
+    let [r, v] = solvers::solve_newton(equation, &[r_0, calc_velocity(r_0)], None, true).unwrap();
     let t: f64 = 100.0 * 60.0 * 60.0;
 
     println!("Optimal orbit: {:?}", r - R);
@@ -197,7 +199,7 @@ fn calculate_closest_good_orbit(r_0: f64) -> (f64, f64, f64, f64, u32) {
         x: vec![],
         method_name: solution.method_name.clone(),
     };
-    
+
     for i in 0..find_last_start_intersection(&solution) {
         let t = solution.t[i];
         let angle = -t * OMEGA_E;
@@ -209,19 +211,25 @@ fn calculate_closest_good_orbit(r_0: f64) -> (f64, f64, f64, f64, u32) {
             0.0,
             0.0,
             0.0,
-            ]);
-        }
-    
+        ]);
+    }
+
     let last_intersection_index = find_last_start_intersection(&earth_solution) + 1;
-    
+
     // println!("last interectio/n index: {}", last_intersection_index);
 
     earth_solution.x.truncate(last_intersection_index);
     earth_solution.t.truncate(last_intersection_index);
-    
-let (max_delta, intersections) = find_max_delta(&earth_solution);
 
-    (*earth_solution.t.last().unwrap(), r, v, max_delta, intersections)
+    let (max_delta, intersections) = find_max_delta(&earth_solution);
+
+    (
+        *earth_solution.t.last().unwrap(),
+        r,
+        v,
+        max_delta,
+        intersections,
+    )
 
     // write_csv(
     //     &earth_solution,
@@ -234,8 +242,66 @@ let (max_delta, intersections) = find_max_delta(&earth_solution);
 }
 
 fn main() {
-    for i in (400..600).step_by(10) {
-        let (t, r, v, max_delta, intersections) = calculate_closest_good_orbit(i as f64 * 1000.0 + R);
-        println!("i: {}, t: {}, R rel: {}, r: {}, v: {}, max_delta: {}, intersectios: {}", i, t, r - R, r, v, max_delta, intersections);
+// i: 440, t: 86160.00000052729, R rel: 430537.2896931749, r: 6801839.289693175, v: 7561.578072344894, max_delta: 37508675.8817733, intersectios: 15
+    let r: f64 = 6801839.289693175;
+    let v: f64 = 7561.578072344894;
+    let t: f64 = 86160.00000052729;
+    let problem: solvers::CauchyProblem<6> = solvers::CauchyProblem {
+        f: gravity_law,
+        start: 0.0,
+
+        // stop: 100.0 * 60.0 * 60.0,
+        stop: t,
+        x_0: [
+            r,
+            0.0,
+            0.0,
+            0.0,
+            v * ORBIT_ANGLE.cos(),
+            v * ORBIT_ANGLE.sin(),
+        ],
+    };
+
+    let mut solver: solvers::RungeKuttaMethod<6, 3, 18> = solvers::RungeKuttaMethod::new(
+        4,
+        [[0.0, 0.0, 0.0], [0.5, 0.0, 0.0], [-1.0, 2.0, 0.0]],
+        [1f64 / 6f64, 2f64 / 3f64, 1f64 / 6f64],
+        [0f64, 0.5f64, 1f64],
+        "Kutta's third-order method (Explicit)".to_string(),
+    );
+
+    let (mut solution, res) = solver.solve(&problem, 0.1, true, Some(600));
+
+    for i in 0..solution.t.len() {
+        let t = solution.t[i];
+        let angle = -t * OMEGA_E;
+        solution.x[i] = [
+            solution.x[i][0] * angle.cos() - solution.x[i][1] * angle.sin(),
+            solution.x[i][0] * angle.sin() + solution.x[i][1] * angle.cos(),
+            solution.x[i][2],
+            0.0,
+            0.0,
+            0.0,
+        ];
     }
+
+    write_csv(
+        &solution,
+        "../../problem_data/plot_data/earth_output".to_string(),
+    );
+
+    // for i in (500..600).step_by(10) {
+    //     let (t, r, v, max_delta, intersections) =
+    //         calculate_closest_good_orbit(i as f64 * 1000.0 + R);
+    //     println!(
+    //         "i: {}, t: {}, R rel: {}, r: {}, v: {}, max_delta: {}, intersectios: {}",
+    //         i,
+    //         t,
+    //         r - R,
+    //         r,
+    //         v,
+    //         max_delta,
+    //         intersections
+    //     );
+    // }
 }

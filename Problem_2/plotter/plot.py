@@ -34,7 +34,7 @@ end_marker = go.Scatter3d(
 )
 
 # Create Earth sphere
-r = 6700e3  # Radius in km
+r = 6371302.0 / 1000  # Radius in km
 theta = np.linspace(0, np.pi, 50)
 phi = np.linspace(0, 2 * np.pi, 50)
 theta, phi = np.meshgrid(theta, phi)
