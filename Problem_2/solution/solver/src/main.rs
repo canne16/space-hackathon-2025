@@ -46,9 +46,14 @@ pub struct CauchyProblem<const N: usize> {
     pub x_0: [f64; N],
 }
 
+fn calc_velocity(r: f64) -> f64 {
+    (mu / r).sqrt()
+}
+
 fn main() {
+    let r: f64 = R + 500000.0;
     let angle: f64 = 98.0 * std::f64::consts::PI / 180.0;
-    let velocity: f64 = 28234.7460233;
+    let velocity: f64 = calc_velocity(r);
 
     let problem: solvers::CauchyProblem<6> = solvers::CauchyProblem {
         f: gravity_law,
@@ -59,7 +64,7 @@ fn main() {
         // x_0: [42164000.0, 0.0, 0.0, 0.0, 3070.0, 0.0],
 
         stop: 100.0 * 60.0 * 60.0,
-        x_0: [R + 500000.0, 0.0, 0.0, 0.0, velocity * angle.cos(), velocity * angle.sin()],
+        x_0: [r, 0.0, 0.0, 0.0, velocity * angle.cos(), velocity * angle.sin()],
     };
 
     let mut solver: solvers::RungeKuttaMethod<6, 3, 18> = solvers::RungeKuttaMethod::new(
