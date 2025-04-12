@@ -6,7 +6,7 @@ use crate::solvers::*;
 
 const mu: f64 = 398600.4415e9;
 const R: f64 = 6371302.0;
-const omega_E: f64 = 729211e-5;
+const omega_E: f64 = 7.29211e-5;
 const J_2: f64 = 1082.8e-6;
 
 fn write_csv<const N: usize>(solution: &CauchySolution<N>, path: String) {
@@ -64,6 +64,7 @@ fn main() {
         // x_0: [42164000.0, 0.0, 0.0, 0.0, 3070.0, 0.0],
 
         stop: 100.0 * 60.0 * 60.0,
+        // stop: 1.0 * 60.0 * 60.0,
         x_0: [r, 0.0, 0.0, 0.0, velocity * angle.cos(), velocity * angle.sin()],
     };
 
@@ -87,7 +88,7 @@ fn main() {
 
     for i in 0..solution.t.len() {
         let t = solution.t[i];
-        let angle = t * omega_E;
+        let angle = -t * omega_E;
         earth_solution.t.push(t);
         earth_solution.x.push([
             solution.x[i][0] * angle.cos() - solution.x[i][1] * angle.sin(),
